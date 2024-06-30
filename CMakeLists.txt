@@ -35,6 +35,10 @@ add_library(${PROJECT_NAME} SHARED
   src/blend_segment.cpp
   src/segment_constraint.cpp
   src/utility_functions.cpp
+  src/value_group.cpp
+  src/symbol_group.cpp
+  src/point2.cpp
+  src/path2.cpp
 )
 
 target_link_libraries (${PROJECT_NAME} Eigen3::Eigen)
@@ -50,3 +54,9 @@ install(TARGETS sotg DESTINATION lib)
 
 #add_definitions(-DDEBUG) #uncomment for additional debug output
 #add_definitions(-DVERBOSE_TESTS) # print all calculated values
+
+  #############
+  ## Testing ##
+  #############
+
+  add_executable(test test/test.cpp)
