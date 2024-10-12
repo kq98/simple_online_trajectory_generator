@@ -8,17 +8,20 @@
 #include "sotg/logger.hpp"
 #include "sotg/path.hpp"
 #include "sotg/path_manager.hpp"
+#include "sotg/path_manager.hpp"
 #include "sotg/point.hpp"
 #include "sotg/section.hpp"
-#include "sotg/section_constraint.hpp"
-#include "sotg/segment_constraint.hpp"
+#include "sotg/symbol_group.hpp"
+#include "sotg/result.hpp"
 
 namespace SOTG {
 
 // The enty point for interactions with SOTG in the form of new input or position and velocity calculations for a
 // specifc point in time
-class TrajectoryGenerator {
+class TrajectoryGenerator2 {
 private:
+    SymbolGroupMap symbol_group_map_;
+
     std::shared_ptr<Logger> default_logger_;
     const Logger& logger_;
 
@@ -28,14 +31,13 @@ private:
     std::vector<std::map<std::string, double>> debug_info_vec_;
 
 public:
-    TrajectoryGenerator();
-    TrajectoryGenerator(const Logger& logger);
+    TrajectoryGenerator(SymbolGroupMap symbol_groups);
+    TrajectoryGenerator(SymbolGroupMap symbol_groups, const Logger& logger);
 
     double getDuration();
     int getNumPassedWaypoints(double tick);
-    void calcPositionAndVelocity(double time, Point& pos, Point& vel, int& id, bool disable_blending = false);
-    void resetPath(Path path, std::vector<SectionConstraint> section_constraints,
-                   std::vector<SegmentConstraint> segment_constraints);
+    void calcPositionAndVelocity(double time, Result& result);
+    void resetPath(Path path);
 
     std::vector<std::map<std::string, double>>& getDebugInfo() { return debug_info_vec_; };
 };

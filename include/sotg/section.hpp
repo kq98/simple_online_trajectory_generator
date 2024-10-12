@@ -5,7 +5,6 @@
 
 #include "sotg/phase.hpp"
 #include "sotg/point.hpp"
-#include "sotg/section_constraint.hpp"
 
 namespace SOTG {
 namespace detail {
@@ -16,17 +15,17 @@ namespace detail {
     private:
         Point& start_point_;
         Point& end_point_;
-        Point diff_;
-        Point dir_;
+
+        const SymbolGroupMap& symbol_groups_;
+
         double length_;
-        SectionConstraint constraint_;
 
         std::vector<Phase> phases_;
 
         int index_slowest_dof_ = -1;
 
-        std::vector<double> adapted_acceleration_;
-        std::vector<double> adapted_velocity_;
+        std::map<std::string, double> a_max_;
+        std::map<std::string, double> v_max_;
 
         double duration_ = 0.0;
         double start_time_ = 0.0;
@@ -40,41 +39,33 @@ namespace detail {
         const Point& getStartPoint() const { return start_point_; }
         const Point& getEndPoint() const { return end_point_; }
 
-        double getAccMaxLinear() const { return constraint_.getAccelerationMagnitudeLinear(); }
-        double getAccMaxAngular() const { return constraint_.getAccelerationMagnitudeAngular(); }
-        double getVelMaxLinear() const { return constraint_.getVelocityMagnitudeLinear(); }
-        double getVelMaxAngular() const { return constraint_.getVelocityMagnitudeAngular(); }
-
         double getLength() const { return length_; }
-        const Point& getDirection() const { return dir_; }
-        const Point& getDifference() const { return diff_; }
-        void setLength(double length) { length_ = length; }
-        void setDirection(const Point& dir) { dir_ = dir; }
-        void setDifference(const Point& diff) { diff_ = diff; }
+        // const Point& getDirection() const { return dir_; }
+        // const Point& getDifference() const { return diff_; }
+        // void setLength(double length) { length_ = length; }
+        // void setDirection(const Point& dir) { dir_ = dir; }
+        // void setDifference(const Point& diff) { diff_ = diff; }
 
-        Section(Point& p_start_ref, Point& p_end_ref, SectionConstraint constraint_copy, size_t section_id);
+        Section(Point& p_start_ref, Point& p_end_ref, size_t section_id)
+            : start_point_(p_start_ref)
+            , end_point_(p_end_ref)
+            , symbol_groups_(p_start_ref.getSymbolMap())
+            , id_(section_id)
+        {
+        }
 
         void setIndexSlowestDoF(int index) { index_slowest_dof_ = index; }
 
         void setDuration(double time) { duration_ = time; }
         double getDuration() const { return duration_; }
 
-        const Phase& getPhaseByDistance(double distance) const;
+        std::map<std::string, double>& getAccelerations() { return a_max_; }
+        std::map<std::string, double>& getVelocities() { return v_max_; }
 
-        const std::vector<double>& getAdaptedAcceleration() const { return adapted_acceleration_; }
-        const std::vector<double>& getAdaptedVelocity() const { return adapted_velocity_; }
-        void setAdaptedAcceleration(const std::vector<double>& new_adapted_acceleration)
-        {
-            adapted_acceleration_ = new_adapted_acceleration;
-        }
-        void setAdaptedVelocity(const std::vector<double>& new_adapted_velocity)
-        {
-            adapted_velocity_ = new_adapted_velocity;
-        }
-
-        const Phase& getPhaseByTime(double time) const;
+        Phase& getPhaseByDistance(double distance);
+        Phase& getPhaseByTime(double time);
         void setPhases(const std::vector<Phase>& new_phases) { phases_ = new_phases; }
-        const std::vector<Phase>& getPhases() const { return phases_; }
+        std::vector<Phase>& getPhases() { return phases_; }
 
         double getStartTime() const { return start_time_; }
         double getEndTime() const { return start_time_ + duration_; }
@@ -82,10 +73,7 @@ namespace detail {
 
         int getIndexSlowestDoF() const { return index_slowest_dof_; }
 
-        const Phase& getPhaseByType(PhaseType type) const;
-
-        void setTimeShift(double shift) { time_shift_ = shift; }
-        double getTimeShift() const { return time_shift_; }
+        Phase& getPhaseByType(PhaseType type);
 
         void setID(size_t new_id) { id_ = new_id; }
         size_t getID() { return id_; }

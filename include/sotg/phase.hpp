@@ -2,8 +2,8 @@
 
 #include <cmath>
 #include <vector>
-
-#include "sotg/phase.hpp"
+#include <map>
+#include <string>
 
 namespace SOTG {
 namespace detail {
@@ -24,7 +24,7 @@ namespace detail {
         }
     }
 
-    struct PhaseDoF {
+    struct PhaseComponent {
         double duration = 0.0;
         double length = 0.0;
         double distance_p_start = 0.0;
@@ -32,7 +32,7 @@ namespace detail {
 
     // A specific kinematic state that applies to a specific part of a section
     struct Phase {
-        std::vector<PhaseDoF> components;
+        std::map<std::string ,PhaseComponent> components;
 
         double duration = 0.0;
         double length = 0.0;

@@ -13,14 +13,14 @@ int main()
     symbol_map["rot"] = {"w", "x", "y", "z"};
     symbol_map["rot"].setQuaternion(true);
 
-    SOTG::Point2 p1(symbol_map, "p1");
+    SOTG::Point p1(symbol_map, "p1");
     p1["pos"] = {0.0, 0.0, 0.0};
     p1["rot"] = {0.0, 0.0, 0.0, 1.0};
 
     p1["pos"].setConstraints(1.0, 1.0);
     p1["rot"].setConstraints(1.0, 1.0);
 
-    SOTG::Point2 p2(symbol_map, "p2");
+    SOTG::Point p2(symbol_map, "p2");
     p2["pos"] = {1.0, 0.0, 0.0};
     p2["rot"] = {1.0, 0.0, 0.0, 0.0};
 
@@ -39,13 +39,13 @@ int main()
     // symb_map2["A5"] = {"a"};
     // symb_map2["A6"] = {"a"};
 
-    // SOTG::Point2 p2(symb_map2, "p2");
+    // SOTG::Point p2(symb_map2, "p2");
     // p2["A3"] = {0.25};
     // p2["A5"] = {0.0};
 
     // std::cout << p2 << std::endl;
 
-    SOTG::Path2 my_path;
+    SOTG::Path my_path;
     my_path.addPoint(p1);
     my_path.addPoint(p2);
     my_path.addPoint(p1);

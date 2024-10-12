@@ -1,5 +1,8 @@
 #pragma once
 
+#include "sotg/symbol_group.hpp"
+#include "sotg/value_group.hpp"
+
 namespace SOTG {
 
 // Contains the limiting factors for a section
@@ -11,8 +14,15 @@ private:
     double velocity_magnitude_linear_;
     double velocity_magnitude_angular_;
 
+    SymbolGroupMap& symbol_map_;
+    ValueGroupMap value_map_;
+
 public:
-    SectionConstraint(double acc_lin, double acc_ang, double vel_lin, double vel_ang);
+    SectionConstraint(SymbolGroupMap& symbol_map) : symbol_map_(symbol_map) {
+        for (auto& [key, symbols] : symbol_map) {
+            value_map_.insert({key, ValueGroup(symbols)});
+        }
+    }
 
     double getAccelerationMagnitudeLinear() const { return acceleration_magnitude_linear_; }
     double getAccelerationMagnitudeAngular() const { return acceleration_magnitude_angular_; }

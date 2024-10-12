@@ -3,22 +3,7 @@
 using namespace SOTG;
 using namespace detail;
 
-Section::Section(Point& p_start_ref, Point& p_end_ref, SectionConstraint constraint_copy, size_t section_id)
-    : start_point_(p_start_ref)
-    , end_point_(p_end_ref)
-    , constraint_(constraint_copy)
-    , id_(section_id)
-{
-    diff_ = end_point_ - start_point_;
-    length_ = diff_.norm();
-    if (utility::nearlyZero(length_)) {
-        dir_.zeros(diff_.size());
-    } else {
-        dir_ = diff_ / length_;
-    }
-}
-
-const Phase& Section::getPhaseByTime(double time) const
+Phase& Section::getPhaseByTime(double time)
 {
     double previous_time = 0.0;
     for (auto& phase : phases_) {
@@ -37,7 +22,7 @@ const Phase& Section::getPhaseByTime(double time) const
     }
 }
 
-const Phase& Section::getPhaseByType(PhaseType type) const
+Phase& Section::getPhaseByType(PhaseType type)
 {
     auto it = std::find_if(phases_.begin(), phases_.end(), [&](const Phase& phase) { return type == phase.type; });
 
@@ -49,7 +34,7 @@ const Phase& Section::getPhaseByType(PhaseType type) const
     }
 }
 
-const Phase& Section::getPhaseByDistance(double distance) const
+Phase& Section::getPhaseByDistance(double distance)
 {
     // if (utility::nearlyZero(distance)) {
     //     return getPhaseByType(PhaseType::ConstantAcceleration);

@@ -1,3 +1,4 @@
+
 #include "sotg/path.hpp"
 
 #include <iostream>
@@ -9,55 +10,14 @@ void Path::addPoint(Point point) {
     point.setID(point_id);
     waypoints_.push_back(point); }
 
-// should be in pitasc glue
-void Path::addPoint(const std::vector<Eigen::VectorXd>& old_point)
+Point& Path::getPoint(std::string name)
 {
-    Point new_point;
-    // Expecting xyz, abc
-    Eigen::VectorXd linear_point = old_point.front();
-    Eigen::VectorXd angular_point = old_point.back();
-
-    for (auto i = 0; i < linear_point.size(); ++i) {
-        new_point.addValue(linear_point[i]);
+    for (auto& point : waypoints_) {
+        if (point.getName().compare(name) == 0) {
+            return point;
+        }
     }
-    new_point.setOrientationIndex(linear_point.size());
-    for (auto i = 0; i < angular_point.size(); ++i) {
-        new_point.addValue(angular_point[i]);
-    }
-
-    int point_id = waypoints_.size() + 1;
-    new_point.setID(point_id);
-    waypoints_.push_back(new_point);
-}
-
-void Path::addPoint(const std::vector<std::vector<double>>& old_point)
-{
-    Point new_point;
-
-    std::vector<double> linear_point = old_point.front();
-    std::vector<double> angular_point = old_point.back();
-
-    for (size_t i = 0; i < linear_point.size(); ++i) {
-        new_point.addValue(linear_point[i]);
-    }
-    new_point.setOrientationIndex(linear_point.size());
-    for (size_t i = 0; i < angular_point.size(); ++i) {
-        new_point.addValue(angular_point[i]);
-    }
-
-    int point_id = waypoints_.size() + 1;
-    new_point.setID(point_id);
-    waypoints_.push_back(new_point);
-}
-
-Point& Path::getPointReference(size_t index)
-{
-    if (index > waypoints_.size() - 1) {
-        throw std::runtime_error("Index out of bounds, trying to access " + std::to_string(index)
-                                 + "# waypoint from a path with " + std::to_string(waypoints_.size())
-                                 + " waypoints total");
-    }
-    return waypoints_[index];
+    throw std::runtime_error("No Point named \"" + name + "\" was found");
 }
 
 
