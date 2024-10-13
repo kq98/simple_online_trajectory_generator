@@ -20,22 +20,6 @@ Point& Path::getPoint(std::string name)
     throw std::runtime_error("No Point named \"" + name + "\" was found");
 }
 
-
-Point SOTG::Path::getPointValue(size_t index) const
-{
-    return waypoints_[index];
-}
-
-Path SOTG::Path::operator+(const Path& path)
-{
-    for(size_t i = 0; i < path.size(); i++)
-    {
-        addPoint(path.getPointValue(i));
-    }
-
-    return *this;
-}
-
 std::ostream& Path::operator<<(std::ostream& out)
 {
     out << "[ ";

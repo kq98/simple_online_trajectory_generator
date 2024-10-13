@@ -6,6 +6,15 @@ Eigen::Quaterniond eulerToQuat(double roll, double pitch, double yaw);
 std::string vec_to_string(Eigen::Vector3d vec);
 Eigen::Vector3d quatToEuler(Eigen::Quaterniond quat);
 
+class TestLogger : public SOTG::Logger
+{
+public:
+    void log(const std::string& message, [[maybe_unused]] MsgType type = INFO) const override final
+    {
+        std::cout << message << std::endl;
+    }
+};
+
 int main()
 {
     SOTG::SymbolGroupMap symbol_map;
@@ -24,12 +33,9 @@ int main()
     p2["pos"] = {1.0, 0.0, 0.0};
     p2["rot"] = {1.0, 0.0, 0.0, 0.0};
 
-    p2["pos"].setConstraints(1.0, 1.0);
+    p2["pos"].setConstraints(1.0, 5.0);
     p2["rot"].setConstraints(1.0, 1.0);
 
-
-
-    // std::cout << p1 << std::endl;
 
     // SOTG::SymbolGroupMap symb_map2;
     // symb_map2["A1"] = {"a"};
@@ -43,14 +49,14 @@ int main()
     // p2["A3"] = {0.25};
     // p2["A5"] = {0.0};
 
-    // std::cout << p2 << std::endl;
-
     SOTG::Path my_path;
     my_path.addPoint(p1);
     my_path.addPoint(p2);
     my_path.addPoint(p1);
 
-    SOTG::TrajectoryGenerator2 tg(symbol_map);
+
+    TestLogger logger;
+    SOTG::TrajectoryGenerator tg(symbol_map, logger);
 
     tg.resetPath(my_path);
 
@@ -74,8 +80,6 @@ int main()
         std::cout << " --- " << std::endl;
 
     }
-
-
 }
 
 std::string vec_to_string(Eigen::Vector3d vec) {

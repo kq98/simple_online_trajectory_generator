@@ -18,7 +18,7 @@ namespace SOTG {
 
 // The enty point for interactions with SOTG in the form of new input or position and velocity calculations for a
 // specifc point in time
-class TrajectoryGenerator2 {
+class TrajectoryGenerator {
 private:
     SymbolGroupMap symbol_group_map_;
 

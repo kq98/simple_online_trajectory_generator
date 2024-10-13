@@ -113,12 +113,7 @@ void ConstantAccelerationSolver::calcDurationAndDistancePerGroup(double& a_max, 
     if (L_coast < 0.0 && !(std::abs(L_coast) < 1e-6)) {
         double v_max_reduced = std::sqrt(distance * a_max);
 
-        logger_.log("[Section Nr." + std::to_string(current_section_id) + "][Coord. Nr."
-                        + std::to_string(coordinate_id) + "] KinematicSolver: Decreasing maximum velocity from "
-                        + std::to_string(v_max) + " to " + std::to_string(v_max_reduced),
-                    Logger::INFO);
-
-        calcDurationAndDistancePerGroup(a_max, v_max_reduced, distance, duration, coordinate_id);
+        calcDurationAndDistancePerGroup(a_max, v_max_reduced, distance, duration);
         v_max = v_max_reduced;
     }
 }
@@ -146,6 +141,13 @@ void ConstantAccelerationSolver::calcDurationAndDistance(Phase& acc_phase, Phase
             double v_max = end_point[group_name].getMaxVel();
 
             calcDurationAndDistancePerGroup(a_max,v_max, distance, duration);
+
+            if (v_max < end_point[group_name].getMaxVel()) {
+                logger_.log("[Section between Points " + std::to_string(start_point.getID()) + "(" + start_point.getName() + ")" + " and " + std::to_string(end_point.getID()) + "(" + end_point.getName() + ")]"
+                                + "[" + group_name + "] KinematicSolver: Decreasing maximum velocity from "
+                                + std::to_string(end_point[group_name].getMaxVel()) + " to " + std::to_string(v_max),
+                            Logger::INFO);
+            }
 
             group_vel[group_name] = v_max;
             group_acc[group_name] = a_max;
@@ -207,6 +209,14 @@ void ConstantAccelerationSolver::calcDurationAndDistance(Phase& acc_phase, Phase
 
 Section ConstantAccelerationSolver::calcSection(Point& p_start_ref, Point& p_end_ref, size_t section_id)
 {
+    /*
+    
+    Calculate the maximum velocity that can be used in a trajectory between two waypoints(Section), this might be smaller or the same as the maximum set by the user.
+    Different ValueGroups, might traverse the same path between two points at different speeds, therfor all ValueGroups need to be time synchronised, 
+    see https://www.diag.uniroma1.it/~deluca/rob1_en/14_TrajectoryPlanningCartesian.pdf such that all ValueGroups start and finish at the same time.
+
+    */
+
     Section section(p_start_ref, p_end_ref, section_id);
 
     std::vector<double> duration_per_group;
@@ -220,6 +230,7 @@ Section ConstantAccelerationSolver::calcSection(Point& p_start_ref, Point& p_end
 
     calcDurationAndDistance(acc_phase, coast_phase, dec_phase, p_start_ref, p_end_ref, duration_per_group, distance_per_group, a_max, v_max);
 
+    // slowest ValueGroup is identified in order to slow all other groups such that they require the same time.
     int index_slowest_dof = findIndexOfMax(duration_per_group);
     double T_total = duration_per_group[index_slowest_dof];
     section.setIndexSlowestDoF(index_slowest_dof);
@@ -292,12 +303,20 @@ void ConstantAccelerationSolver::calcPosAndVelSection(double t_section, Section&
         if (symbols.isQuaternion()) {
             double diff_angle = Eigen::AngleAxisd(diff_group.getQuaternionValues()).angle();
 
-            double pos_magnitude, vel_magnitude;
+            // pos_interpolation_factor == [0,1] based on the requested point in time
+            double pos_interpolation_factor, vel_interpolation_factor;
             calcPosAndVelSingleGroup(diff_angle, phase, phase.components[group_name].distance_p_start, t_phase,
-                                     a_max, v_max, pos_magnitude, vel_magnitude);
-            loc = p_start[group_name].getQuaternionValues().slerp(pos_magnitude, p_end[group_name].getQuaternionValues());
+                                     a_max, v_max, pos_interpolation_factor, vel_interpolation_factor);
+
+            Eigen::Quaterniond startQuat = p_start[group_name].getQuaternionValues();
+            Eigen::Quaterniond endQuat = p_end[group_name].getQuaternionValues();
+
+            loc = startQuat.slerp(pos_interpolation_factor, endQuat);
+
             Eigen::Vector3d vel_dir = Eigen::AngleAxisd(diff_group.getQuaternionValues().normalized()).axis();
-            Eigen::Vector3d ang_vel = vel_dir * vel_magnitude;
+            Eigen::Vector3d ang_vel = vel_dir * vel_interpolation_factor;
+
+            // vel is a Quaternion for convinience, it is used as a container for the angle velocity but no longer represent a rotation or orientation
             vel = Eigen::Quaterniond(0.0, ang_vel.x(), ang_vel.y(), ang_vel.z());
 
         } else {

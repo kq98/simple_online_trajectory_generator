@@ -25,9 +25,9 @@ TrajectoryGenerator::TrajectoryGenerator(SymbolGroupMap symbol_groups, const Log
         = std::unique_ptr<detail::PathManager>(new detail::PathManager(kinematic_solver_, debug_info_vec_));
 }
 
-void TrajectoryGenerator2::resetPath(Path path) { path_manager_->resetPath(path); }
+void TrajectoryGenerator::resetPath(Path path) { path_manager_->resetPath(path); }
 
-double TrajectoryGenerator2::getDuration()
+double TrajectoryGenerator::getDuration()
 {
     double total_time = 0.0;
     for (const auto section : path_manager_->getSections()) {
@@ -45,7 +45,7 @@ int SOTG::TrajectoryGenerator::getNumPassedWaypoints(double tick)
 
 }
 
-void TrajectoryGenerator2::calcPositionAndVelocity(double time, Result& result)
+void TrajectoryGenerator::calcPositionAndVelocity(double time, Result& result)
 {
     Section& section = path_manager_->getSectionAtTime(time);
 
